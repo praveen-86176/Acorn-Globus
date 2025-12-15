@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const equipment = await prisma.equipment.findMany({ orderBy: { id: "asc" } });
-  return NextResponse.json({ equipment });
+  try {
+    const equipment = await prisma.equipment.findMany({ orderBy: { id: "asc" } });
+    return NextResponse.json({ equipment });
+  } catch (error) {
+    console.error("Database error:", error);
+    return NextResponse.json({ equipment: [] });
+  }
 }
 
 export async function POST(request: Request) {

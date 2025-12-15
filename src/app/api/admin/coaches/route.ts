@@ -3,12 +3,20 @@ import { prisma } from "@/lib/prisma";
 
 type AvailabilityInput = { dayOfWeek: number; startHour: number; endHour: number };
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const coaches = await prisma.coach.findMany({
-    include: { availability: true },
-    orderBy: { id: "asc" },
-  });
-  return NextResponse.json({ coaches });
+  try {
+    const coaches = await prisma.coach.findMany({
+      include: { availability: true },
+      orderBy: { id: "asc" },
+    });
+    return NextResponse.json({ coaches });
+  } catch (error) {
+    console.error("Database error:", error);
+    // Fallback for build time or missing DB
+    return NextResponse.json({ coaches: [] });
+  }
 }
 
 export async function POST(request: Request) {

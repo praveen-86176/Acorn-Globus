@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const rules = await prisma.pricingRule.findMany({ orderBy: { id: "asc" } });
-  return NextResponse.json({ rules });
+  try {
+    const rules = await prisma.pricingRule.findMany({ orderBy: { id: "asc" } });
+    return NextResponse.json({ rules });
+  } catch (error) {
+    console.error("Database error:", error);
+    return NextResponse.json({ rules: [] });
+  }
 }
 
 export async function POST(request: Request) {
