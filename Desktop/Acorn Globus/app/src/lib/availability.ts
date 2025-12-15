@@ -8,7 +8,7 @@ export const SLOT_DURATION_HRS = 1;
 export type SlotAvailability = {
   startTime: Date;
   availableCourts: { id: number; name: string; type: string; baseRate: number }[];
-  availableCoaches: { id: number; name: string }[];
+  coaches: { id: number; name: string; isAvailable: boolean; status: string }[];
   equipmentAvailability: { id: number; name: string; available: number }[];
 };
 
@@ -54,17 +54,25 @@ export async function computeAvailability(date: string): Promise<SlotAvailabilit
       return !conflicts;
     });
 
-    const availableCoaches = coaches
-      .filter((coach) =>
-        coach.availability.some((a) => a.dayOfWeek === dayOfWeek && hour >= a.startHour && slotEnd.getHours() <= a.endHour),
-      )
-      .filter((coach) => {
-        const conflicts = bookings.some(
-          (b) => b.coachId === coach.id && overlaps(slotStart, SLOT_DURATION_HRS, b.startTime, b.durationHrs),
-        );
-        return !conflicts;
-      })
-      .map((coach) => ({ id: coach.id, name: coach.name }));
+    const slotCoaches = coaches.map((coach) => {
+      const isWorking = coach.availability.some(
+        (a) => a.dayOfWeek === dayOfWeek && hour >= a.startHour && slotEnd.getHours() <= a.endHour
+      );
+      const isBooked = bookings.some(
+        (b) => b.coachId === coach.id && overlaps(slotStart, SLOT_DURATION_HRS, b.startTime, b.durationHrs)
+      );
+
+      let status = "Available";
+      if (isBooked) status = "Booked";
+      else if (!isWorking) status = "Unavailable";
+
+      return {
+        id: coach.id,
+        name: coach.name,
+        isAvailable: isWorking && !isBooked,
+        status,
+      };
+    });
 
     const equipmentAvailability = equipment.map((item) => {
       const used = bookings.reduce((sum, b) => {
@@ -82,7 +90,7 @@ export async function computeAvailability(date: string): Promise<SlotAvailabilit
     slots.push({
       startTime: slotStart,
       availableCourts: availableCourts.map((c) => ({ id: c.id, name: c.name, type: c.type, baseRate: c.baseRate })),
-      availableCoaches,
+      coaches: slotCoaches,
       equipmentAvailability,
     });
   }

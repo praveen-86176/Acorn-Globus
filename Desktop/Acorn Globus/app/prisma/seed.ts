@@ -73,12 +73,24 @@ async function main() {
         city: "Bengaluru",
         ratePerHour: 1050,
       },
+      {
+        name: "Vikram Singh",
+        bio: "National level player, specializes in smash and aggressive play.",
+        city: "Bengaluru",
+        ratePerHour: 1200,
+      },
+      {
+        name: "Anjali Gupta",
+        bio: "Patient coach for beginners and intermediates. Focuses on basics.",
+        city: "Bengaluru",
+        ratePerHour: 800,
+      },
     ],
   });
 
   console.info(`Seeded ${coaches.count} coaches`);
 
-  const [ayesha, rahul, arjun] = await prisma.coach.findMany({ orderBy: { id: "asc" } });
+  const [ayesha, rahul, arjun, vikram, anjali] = await prisma.coach.findMany({ orderBy: { id: "asc" } });
 
   await prisma.coachAvailability.createMany({
     data: [
@@ -93,6 +105,20 @@ async function main() {
       // Arjun - weekends
       { coachId: arjun.id, dayOfWeek: 6, startHour: 8, endHour: 14 }, // Saturday
       { coachId: arjun.id, dayOfWeek: 0, startHour: 8, endHour: 14 }, // Sunday
+      // Vikram - Weekdays mid-day (Training focus)
+      { coachId: vikram.id, dayOfWeek: 1, startHour: 10, endHour: 16 }, // Monday
+      { coachId: vikram.id, dayOfWeek: 2, startHour: 10, endHour: 16 }, // Tuesday
+      { coachId: vikram.id, dayOfWeek: 3, startHour: 10, endHour: 16 }, // Wednesday
+      { coachId: vikram.id, dayOfWeek: 4, startHour: 10, endHour: 16 }, // Thursday
+      { coachId: vikram.id, dayOfWeek: 5, startHour: 10, endHour: 16 }, // Friday
+      // Anjali - Evenings (All week)
+      { coachId: anjali.id, dayOfWeek: 0, startHour: 16, endHour: 20 }, // Sunday
+      { coachId: anjali.id, dayOfWeek: 1, startHour: 16, endHour: 20 }, // Monday
+      { coachId: anjali.id, dayOfWeek: 2, startHour: 16, endHour: 20 }, // Tuesday
+      { coachId: anjali.id, dayOfWeek: 3, startHour: 16, endHour: 20 }, // Wednesday
+      { coachId: anjali.id, dayOfWeek: 4, startHour: 16, endHour: 20 }, // Thursday
+      { coachId: anjali.id, dayOfWeek: 5, startHour: 16, endHour: 20 }, // Friday
+      { coachId: anjali.id, dayOfWeek: 6, startHour: 16, endHour: 20 }, // Saturday
     ],
   });
 
