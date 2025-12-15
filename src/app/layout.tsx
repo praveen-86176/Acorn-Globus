@@ -17,17 +17,28 @@ export const metadata: Metadata = {
   description: "Book badminton courts, rent equipment, and hire coaches in Bengaluru. Real-time availability and dynamic pricing.",
 };
 
+import { ThemeProvider } from "./providers";
+
+// ... existing imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -96,6 +96,44 @@ async function main() {
     ],
   });
 
+  // Create new coaches separately to ensure they are added
+  const newCoaches = await prisma.coach.createMany({
+    data: [
+      {
+        name: "Vikram Singh",
+        bio: "National level player specializing in doubles tactics.",
+        city: "Bengaluru",
+        ratePerHour: 1100,
+      },
+      {
+        name: "Anjali Gupta",
+        bio: "Certified fitness trainer and badminton coach for beginners.",
+        city: "Bengaluru",
+        ratePerHour: 650,
+      },
+    ],
+  });
+
+  // Fetch the new coaches to get their IDs
+  const vikram = await prisma.coach.findFirst({ where: { name: "Vikram Singh" } });
+  const anjali = await prisma.coach.findFirst({ where: { name: "Anjali Gupta" } });
+
+  if (vikram && anjali) {
+    await prisma.coachAvailability.createMany({
+      data: [
+        // Vikram - Weekday Evenings & Weekends
+        { coachId: vikram.id, dayOfWeek: 2, startHour: 17, endHour: 21 }, // Tuesday
+        { coachId: vikram.id, dayOfWeek: 4, startHour: 17, endHour: 21 }, // Thursday
+        { coachId: vikram.id, dayOfWeek: 6, startHour: 10, endHour: 16 }, // Saturday
+
+        // Anjali - Weekday Mornings & Afternoons
+        { coachId: anjali.id, dayOfWeek: 1, startHour: 9, endHour: 14 }, // Monday
+        { coachId: anjali.id, dayOfWeek: 3, startHour: 9, endHour: 14 }, // Wednesday
+        { coachId: anjali.id, dayOfWeek: 5, startHour: 9, endHour: 14 }, // Friday
+      ]
+    });
+  }
+
   await prisma.pricingRule.createMany({
     data: [
       {
