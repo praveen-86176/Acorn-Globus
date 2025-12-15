@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Court {
+  id         Int        @id @default(autoincrement())
+  name       String
+  location   String
+  type       String
+  isActive   Boolean     @default(true)
+  baseRate   Int         // INR per hour
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  bookings   Booking[]
+}
+
+model Equipment {
+  id         Int        @id @default(autoincrement())
+  name       String
+  quantity   Int
+  baseFee    Int        // INR per unit per hour
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  bookedIn   BookingEquipment[]
+}
+
+model Coach {
+  id           Int                @id @default(autoincrement())
+  name         String
+  bio          String
+  city         String
+  ratePerHour  Int                // INR per hour
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  availability CoachAvailability[]
+  bookings     Booking[]
+}
+
+model CoachAvailability {
+  id        Int    @id @default(autoincrement())
+  coach     Coach  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId   Int
+  dayOfWeek Int    // 0 = Sunday, 6 = Saturday
+  startHour Int    // 24h integer hour in Asia/Kolkata
+  endHour   Int    // exclusive end hour
+}
+
+model PricingRule {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  description String?
+  ruleType    String
+  adjustment  String // fixed or percent
+  amount      Int                 // amount in INR or percentage value
+  startHour   Int?                // optional hour window (24h, inclusive)
+  endHour     Int?                // optional hour window (exclusive)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model Booking {
+  id           Int                 @id @default(autoincrement())
+  reference    String              @unique
+  userName     String
+  contact      String?
+  court        Court               @relation(fields: [courtId], references: [id])
+  courtId      Int
+  coach        Coach?              @relation(fields: [coachId], references: [id])
+  coachId      Int?
+  startTime    DateTime
+  durationHrs  Int
+  totalPrice   Int                 // total booking amount in INR
+  status       String              @default("CONFIRMED")
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  equipment    BookingEquipment[]
+}
+
+model BookingEquipment {
+  id          Int       @id @default(autoincrement())
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId   Int
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentId Int
+  quantity    Int
+}
